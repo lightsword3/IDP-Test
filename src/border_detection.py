@@ -1,5 +1,6 @@
-import image_interface as ii
 import numpy as np
+import cv2
+import random
 
 
 def shift_2d(matrix: np.ndarray, shift_x: int, shift_y: int):
@@ -55,6 +56,7 @@ def shift_2d(matrix: np.ndarray, shift_x: int, shift_y: int):
 
 
 def detect_borders(image: np.ndarray, is_8neighbor_method: bool) -> np.ndarray:
+    """Produce a matrix, containing the borders of the black areas."""
 
     # get black pixels with white 4-neighbors
     white_up = np.clip(image - shift_2d(image, 1, 0) + 255, 0, 255)
@@ -81,7 +83,38 @@ def detect_borders(image: np.ndarray, is_8neighbor_method: bool) -> np.ndarray:
         return borders_4neighbor
 
 
-def test():
+def borders_to_segments(image: np.ndarray, is_8neighbor_method: bool,
+                        viewableOutput: bool) -> (int, np.ndarray):
+    """ Returns segment label matrix or viewable segmented image"""
+    image_as_mask = np.array(image, dtype=np.uint8)
+    output = cv2.connectedComponents(
+        255 - image_as_mask,
+        connectivity=8 if is_8neighbor_method else 4)
+    (num_labels, labels) = output
+
+    if not viewableOutput:
+        return labels
+    else:
+        segmented_image = cv2.cvtColor(image_as_mask, cv2.COLOR_GRAY2RGB)
+
+        for i in range(0, num_labels):
+            label_mask = (labels == i).astype('uint8') * 255
+            label_color = np.zeros_like(segmented_image)
+            label_color[:, :, 0] = random.randrange(20, 220)
+            label_color[:, :, 1] = random.randrange(20, 220)
+            label_color[:, :, 2] = random.randrange(20, 220)
+            colored_border = cv2.bitwise_and(
+                cv2.cvtColor(label_mask, cv2.COLOR_GRAY2RGB),
+                label_color, mask=255 - image_as_mask)
+            segmented_image = segmented_image + colored_border
+
+        return segmented_image
+
+
+if __name__ == "__main__":
+    # Testing
+    import image_interface as ii
+
     # img = ii.import_image_as_matrix('../data/test_8x8.png')
     img = ii.import_image_as_matrix('../data/test_420x400.png')
 
@@ -97,11 +130,15 @@ def test():
     # print(detect_borders(img, is_8neighbor_method=False))
     # print(detect_borders(img, is_8neighbor_method=True))
 
-    ii.output_matrix_as_image(
-        '../output/borders_4n.png', detect_borders(img, False))
-    ii.output_matrix_as_image(
-        '../output/borders_8n.png', detect_borders(img, True))
+    # ii.output_matrix_as_image(
+    #     '../output/borders_4n.png', detect_borders(img, False))
+    # ii.output_matrix_as_image(
+    #     '../output/borders_8n.png', detect_borders(img, True))
 
+    # 4-neighbourhood borders are 8-connected for segmentation
+    # and vice versa
 
-if __name__ == "__main__":
-    test()
+    segmented_4n = borders_to_segments(detect_borders(img, False), True, True)
+    segmented_8n = borders_to_segments(detect_borders(img, True), False, True)
+    ii.output_matrix_as_image('../output/segmented_4n.png', segmented_4n)
+    ii.output_matrix_as_image('../output/segmented_8n.png', segmented_8n)
