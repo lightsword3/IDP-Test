@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def import_image_as_matrix(file_name: str):
+def import_image_as_matrix(file_name: str) -> np.ndarray:
     """Import the specified png image and convert it to a boolean matrix"""
 
     # Read file
@@ -18,9 +18,13 @@ def import_image_as_matrix(file_name: str):
     return np.array(im, dtype=np.int16)
 
 
+def output_matrix_as_image(file_name: str, matrix: np.ndarray):
+    cv2.imwrite(file_name, matrix)
+
+
 def test():
     im = import_image_as_matrix('../data/test_420x400.png')
-    cv2.imwrite("../output/binary_input.png", im)
+    output_matrix_as_image("../output/binary_input.png", im)
 
 
 if __name__ == "__main__":
