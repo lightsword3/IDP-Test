@@ -84,7 +84,7 @@ def detect_borders(image: np.ndarray, is_8neighbor_method: bool) -> np.ndarray:
 
 
 def borders_to_segments(image: np.ndarray, is_8neighbor_method: bool,
-                        viewableOutput: bool) -> (int, np.ndarray):
+                        viewableOutput: bool = False) -> (int, np.ndarray):
     """ Returns segment label matrix or viewable segmented image"""
     image_as_mask = np.array(image, dtype=np.uint8)
     output = cv2.connectedComponents(
@@ -137,8 +137,8 @@ if __name__ == "__main__":
 
     # 4-neighbourhood borders are 8-connected for segmentation
     # and vice versa
-
     segmented_4n = borders_to_segments(detect_borders(img, False), True, True)
     segmented_8n = borders_to_segments(detect_borders(img, True), False, True)
+
     ii.output_matrix_as_image('../output/segmented_4n.png', segmented_4n)
     ii.output_matrix_as_image('../output/segmented_8n.png', segmented_8n)

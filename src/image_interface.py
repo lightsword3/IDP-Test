@@ -24,5 +24,6 @@ def output_matrix_as_image(file_name: str, matrix: np.ndarray):
 
 
 if __name__ == "__main__":
+    # Testing
     im = import_image_as_matrix('../data/test_420x400.png')
     output_matrix_as_image("../output/binary_input.png", im)
