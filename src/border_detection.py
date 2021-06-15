@@ -93,7 +93,7 @@ def borders_to_segments(image: np.ndarray, is_8neighbor_method: bool,
     (num_labels, labels) = output
 
     if not viewableOutput:
-        return labels
+        return (num_labels, labels)
     else:
         segmented_image = cv2.cvtColor(image_as_mask, cv2.COLOR_GRAY2RGB)
 
@@ -108,7 +108,7 @@ def borders_to_segments(image: np.ndarray, is_8neighbor_method: bool,
                 label_color, mask=255 - image_as_mask)
             segmented_image = segmented_image + colored_border
 
-        return segmented_image
+        return (num_labels, segmented_image)
 
 
 if __name__ == "__main__":
@@ -137,8 +137,10 @@ if __name__ == "__main__":
 
     # 4-neighbourhood borders are 8-connected for segmentation
     # and vice versa
-    segmented_4n = borders_to_segments(detect_borders(img, False), True, True)
-    segmented_8n = borders_to_segments(detect_borders(img, True), False, True)
+    (num_labels_4n, segmented_4n) = borders_to_segments(
+        detect_borders(img, False), True, True)
+    (num_labels_8n, segmented_8n) = borders_to_segments(
+        detect_borders(img, True), False, True)
 
     ii.output_matrix_as_image('../output/segmented_4n.png', segmented_4n)
     ii.output_matrix_as_image('../output/segmented_8n.png', segmented_8n)
